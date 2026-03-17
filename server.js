@@ -33,6 +33,11 @@ app.get("/auth/google/callback",
  (req,res)=>{res.send("Login successful")}
 )
 
+const authRoutes = require("./routes/authRoutes")
+
+app.use("/auth", authRoutes)
+
+
 app.use("/cars",carsRoutes)
 app.use("/customers",customersRoutes)
 
