@@ -1,25 +1,45 @@
-const express = require("express")
-const cors = require("cors")
+const express=require("express")
+const cors=require("cors")
+const session=require("express-session")
+const passport=require("./config/passport")
+const swaggerUi=require("swagger-ui-express")
+const swaggerSpec=require("./docs/swagger")
+
 require("dotenv").config()
 
-const swaggerUi = require("swagger-ui-express")
-const swaggerSpec = require("./swagger")
+const carsRoutes=require("./routes/carsRoutes")
+const customersRoutes=require("./routes/customersRoutes")
 
-const carsRoutes = require("./routes/carsRoutes")
-const customersRoutes = require("./routes/customersRoutes")
-
-const app = express()
+const app=express()
 
 app.use(cors())
 app.use(express.json())
 
-app.use("/cars", carsRoutes)
-app.use("/customers", customersRoutes)
+app.use(session({
+ secret:process.env.SESSION_SECRET,
+ resave:false,
+ saveUninitialized:true
+}))
 
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+app.use(passport.initialize())
+app.use(passport.session())
 
-const PORT = process.env.PORT || 3000
+app.get("/auth/google",
+ passport.authenticate("google",{scope:["profile","email"]})
+)
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`)
+app.get("/auth/google/callback",
+ passport.authenticate("google",{failureRedirect:"/"}),
+ (req,res)=>{res.send("Login successful")}
+)
+
+app.use("/cars",carsRoutes)
+app.use("/customers",customersRoutes)
+
+app.use("/api-docs",swaggerUi.serve,swaggerUi.setup(swaggerSpec))
+
+const PORT=process.env.PORT||3000
+
+app.listen(PORT,()=>{
+ console.log(`Server running http://localhost:${PORT}`)
 })

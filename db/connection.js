@@ -3,15 +3,15 @@ require("dotenv").config()
 
 const client = new MongoClient(process.env.MONGODB_URI)
 
-let database
+let db
 
 async function connectDB() {
-  if (!database) {
+  if (!db) {
     await client.connect()
-    database = client.db()
+    db = client.db()
     console.log("MongoDB connected")
   }
-  return database
+  return db
 }
 
 module.exports = connectDB

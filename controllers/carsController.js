@@ -1,34 +1,46 @@
 const carsModel = require("../models/carsModel")
 
-const getAll = async (req, res) => {
-  const cars = await carsModel.getAllCars()
-  res.json(cars)
+exports.getAll = async (req,res)=>{
+ try{
+ const cars=await carsModel.getAllCars()
+ res.json(cars)
+ }catch(e){
+ res.status(500).json({error:e.message})
+ }
 }
 
-const getSingle = async (req, res) => {
-  const car = await carsModel.getCarById(req.params.id)
-  res.json(car)
+exports.getSingle=async(req,res)=>{
+ try{
+ const car=await carsModel.getCarById(req.params.id)
+ res.json(car)
+ }catch(e){
+ res.status(500).json({error:e.message})
+ }
 }
 
-const createCar = async (req, res) => {
-  const result = await carsModel.createCar(req.body)
-  res.status(201).json(result)
+exports.createCar=async(req,res)=>{
+ try{
+ const result=await carsModel.createCar(req.body)
+ res.status(201).json({id:result.insertedId})
+ }catch(e){
+ res.status(500).json({error:e.message})
+ }
 }
 
-const updateCar = async (req, res) => {
-  await carsModel.updateCar(req.params.id, req.body)
-  res.status(200).json({ message: "Car updated successfully" })
+exports.updateCar=async(req,res)=>{
+ try{
+ await carsModel.updateCar(req.params.id,req.body)
+ res.json({message:"Car updated"})
+ }catch(e){
+ res.status(500).json({error:e.message})
+ }
 }
 
-const deleteCar = async (req, res) => {
-  await carsModel.deleteCar(req.params.id)
-  res.status(200).json({ message: "Car deleted successfully" })
-}
-
-module.exports = {
-  getAll,
-  getSingle,
-  createCar,
-  updateCar,
-  deleteCar
+exports.deleteCar=async(req,res)=>{
+ try{
+ await carsModel.deleteCar(req.params.id)
+ res.json({message:"Car deleted"})
+ }catch(e){
+ res.status(500).json({error:e.message})
+ }
 }
