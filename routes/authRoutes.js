@@ -1,20 +1,42 @@
 const router = require("express").Router()
-const authController = require("../controllers/authController")
+const passport = require("passport")
 
 /**
  * @swagger
- * /auth/register:
- *   post:
- *     summary: Register user
+ * /auth/github:
+ *   get:
+ *     summary: Login with GitHub
  */
-router.post("/register", authController.register)
+router.get("/github",
+  passport.authenticate("github", { scope: ["user:email"] })
+)
 
 /**
  * @swagger
- * /auth/login:
- *   post:
- *     summary: Login user
+ * /auth/github/callback:
+ *   get:
+ *     summary: GitHub callback
  */
-router.post("/login", authController.login)
+router.get("/github/callback",
+  passport.authenticate("github", {
+    failureRedirect: "/api-docs"
+  }),
+  (req, res) => {
+    res.redirect("/profile")
+  }
+)
+
+router.get("/profile", (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ message: "Not logged in" })
+  }
+  res.json(req.user)
+})
+
+router.get("/logout", (req, res) => {
+  req.logout(() => {
+    res.send("Logged out")
+  })
+})
 
 module.exports = router

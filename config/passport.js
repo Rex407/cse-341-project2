@@ -1,18 +1,36 @@
-const passport=require("passport")
-const GoogleStrategy=require("passport-google-oauth20").Strategy
-require("dotenv").config()
+const passport = require("passport")
+const GitHubStrategy = require("passport-github2").Strategy
+const { getDb } = require("../db/connection")
 
-passport.use(new GoogleStrategy({
- clientID:process.env.GOOGLE_CLIENT_ID,
- clientSecret:process.env.GOOGLE_CLIENT_SECRET,
- callbackURL:`${process.env.BASE_URL}/auth/google/callback`
+passport.use(new GitHubStrategy({
+  clientID: process.env.GITHUB_CLIENT_ID,
+  clientSecret: process.env.GITHUB_CLIENT_SECRET,
+  callbackURL: process.env.GITHUB_CALLBACK_URL
 },
-(accessToken,refreshToken,profile,done)=>{
- return done(null,profile)
-}
-))
+async (accessToken, refreshToken, profile, done) => {
+  try {
+    const db = getDb()
 
-passport.serializeUser((user,done)=>done(null,user))
-passport.deserializeUser((obj,done)=>done(null,obj))
+    const user = await db.collection("users").findOne({ githubId: profile.id })
 
-module.exports=passport
+    if (user) {
+      return done(null, user)
+    }
+
+    const newUser = {
+      githubId: profile.id,
+      username: profile.username,
+      displayName: profile.displayName
+    }
+
+    await db.collection("users").insertOne(newUser)
+
+    return done(null, newUser)
+
+  } catch (error) {
+    return done(error, null)
+  }
+}))
+
+passport.serializeUser((user, done) => done(null, user))
+passport.deserializeUser((user, done) => done(null, user))

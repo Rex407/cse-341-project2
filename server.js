@@ -1,50 +1,59 @@
-const express=require("express")
-const cors=require("cors")
-const session=require("express-session")
-const passport=require("./config/passport")
-const swaggerUi=require("swagger-ui-express")
-const swaggerSpec=require("./docs/swagger")
+const express = require("express")
+const cors = require("cors")
+const session = require("express-session")
+const passport = require("passport")      //
+require("./config/passport")              // 
+const swaggerUi = require("swagger-ui-express")
+const swaggerSpec = require("./docs/swagger")
+
 
 require("dotenv").config()
 
-const carsRoutes=require("./routes/carsRoutes")
-const customersRoutes=require("./routes/customersRoutes")
+const carsRoutes = require("./routes/carsRoutes")
+const customersRoutes = require("./routes/customersRoutes")
+const authRoutes = require("./routes/authRoutes")
 
-const app=express()
+const app = express()
 
-app.use(cors())
-app.use(express.json())
-
-app.use(session({
- secret:process.env.SESSION_SECRET,
- resave:false,
- saveUninitialized:true
+// ✅ FIX CORS for sessions
+app.use(cors({
+  origin: true,
+  credentials: true
 }))
 
+app.use(express.json())
+
+// ✅ SESSION (IMPORTANT)
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false
+}))
+
+// ✅ PASSPORT
 app.use(passport.initialize())
 app.use(passport.session())
 
-app.get("/auth/google",
- passport.authenticate("google",{scope:["profile","email"]})
-)
-
-app.get("/auth/google/callback",
- passport.authenticate("google",{failureRedirect:"/"}),
- (req,res)=>{res.send("Login successful")}
-)
-
-const authRoutes = require("./routes/authRoutes")
-
+// ✅ USE ONLY ONE AUTH SYSTEM (GitHub)
 app.use("/auth", authRoutes)
 
+// ✅ PROFILE ROUTE (for demo)
+app.get("/profile", (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ message: "Not logged in" })
+  }
+  res.json(req.user)
+})
 
-app.use("/cars",carsRoutes)
-app.use("/customers",customersRoutes)
+// ✅ ROUTES
+app.use("/cars", carsRoutes)
+app.use("/customers", customersRoutes)
 
-app.use("/api-docs",swaggerUi.serve,swaggerUi.setup(swaggerSpec))
+// ✅ SWAGGER
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
-const PORT=process.env.PORT||3000
+const PORT = process.env.PORT || 3000
 
-app.listen(PORT,()=>{
- console.log(`Server running http://localhost:${PORT}`)
+app.listen(PORT, () => {
+  console.log(`Server running http://localhost:${PORT}`)
 })
