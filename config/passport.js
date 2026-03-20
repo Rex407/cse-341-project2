@@ -5,7 +5,7 @@ const { getDb } = require("../db/connection")
 passport.use(new GitHubStrategy({
   clientID: process.env.GITHUB_CLIENT_ID,
   clientSecret: process.env.GITHUB_CLIENT_SECRET,
-  callbackURL: process.env.GITHUB_CALLBACK_URL
+  callbackURL: `${process.env.BASE_URL}/callback`
 },
 async (accessToken, refreshToken, profile, done) => {
   try {
@@ -13,9 +13,7 @@ async (accessToken, refreshToken, profile, done) => {
 
     const user = await db.collection("users").findOne({ githubId: profile.id })
 
-    if (user) {
-      return done(null, user)
-    }
+    if (user) return done(null, user)
 
     const newUser = {
       githubId: profile.id,
@@ -34,3 +32,5 @@ async (accessToken, refreshToken, profile, done) => {
 
 passport.serializeUser((user, done) => done(null, user))
 passport.deserializeUser((user, done) => done(null, user))
+
+module.exports = passport
