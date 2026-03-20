@@ -1,32 +1,38 @@
-const connectDB = require("../db/connection")
+const { getDb } = require("../db/connection")
 const { ObjectId } = require("mongodb")
 
-async function getAllCars() {
-  const db = await connectDB()
+function getAllCars() {
+  const db = getDb()
   return db.collection("cars").find().toArray()
 }
 
-async function getCarById(id) {
-  const db = await connectDB()
+function getCarById(id) {
+  const db = getDb()
   return db.collection("cars").findOne({ _id: new ObjectId(id) })
 }
 
-async function createCar(car) {
-  const db = await connectDB()
+function createCar(car) {
+  const db = getDb()
   return db.collection("cars").insertOne(car)
 }
 
-async function updateCar(id, car) {
-  const db = await connectDB()
+function updateCar(id, car) {
+  const db = getDb()
   return db.collection("cars").updateOne(
     { _id: new ObjectId(id) },
     { $set: car }
   )
 }
 
-async function deleteCar(id) {
-  const db = await connectDB()
+function deleteCar(id) {
+  const db = getDb()
   return db.collection("cars").deleteOne({ _id: new ObjectId(id) })
 }
 
-module.exports = { getAllCars, getCarById, createCar, updateCar, deleteCar }
+module.exports = {
+  getAllCars,
+  getCarById,
+  createCar,
+  updateCar,
+  deleteCar
+}
