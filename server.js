@@ -2,6 +2,7 @@ const express = require("express")
 const cors = require("cors")
 const session = require("express-session")
 const passport = require("passport")
+const { initDb } = require("./db/connection")
 require("./config/passport")
 
 const swaggerUi = require("swagger-ui-express")
@@ -40,6 +41,14 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
 const PORT = process.env.PORT || 3000
 
-app.listen(PORT, () => {
-  console.log(`Server running http://localhost:${PORT}`)
-})
+
+initDb()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server running http://localhost:${PORT}`)
+    })
+  })
+  .catch((err) => {
+    console.error("DB connection failed:", err)
+  })
+
