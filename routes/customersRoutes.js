@@ -1,6 +1,7 @@
 const router = require("express").Router()
 const customersController = require("../controllers/customersController")
 const auth = require("../middleware/auth")
+const validateCustomer = require("../middleware/validateCustomer") // ✅ I ADD THIS
 
 /**
  * @swagger
@@ -38,13 +39,23 @@ router.get("/:id", customersController.getSingle)
  * /customers:
  *   post:
  *     summary: Create a new customer
- *     description: Add a new customer to the database
+ *     description: Add a new customer to the database (Protected)
+ *     security:
+ *       - cookieAuth: []   # ✅ SHOWS AUTH REQUIRED
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - firstName
+ *               - lastName
+ *               - email
+ *               - phone
+ *               - city
+ *               - licenseNumber
+ *               - registeredDate
  *             properties:
  *               firstName:
  *                 type: string
@@ -63,15 +74,24 @@ router.get("/:id", customersController.getSingle)
  *     responses:
  *       201:
  *         description: Customer created successfully
+ *       400:
+ *         description: Validation error
  */
-router.post("/", auth, customersController.createCustomer)
+router.post(
+  "/",
+  auth,
+  validateCustomer,   // ✅ ADD VALIDATION HERE
+  customersController.createCustomer
+)
 
 /**
  * @swagger
  * /customers/{id}:
  *   put:
  *     summary: Update a customer
- *     description: Update customer information
+ *     description: Update customer information (Protected)
+ *     security:
+ *       - cookieAuth: []   # ✅ SHOWS AUTH REQUIRED
  *     parameters:
  *       - in: path
  *         name: id
@@ -79,18 +99,56 @@ router.post("/", auth, customersController.createCustomer)
  *         description: Customer ID
  *         schema:
  *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - firstName
+ *               - lastName
+ *               - email
+ *               - phone
+ *               - city
+ *               - licenseNumber
+ *               - registeredDate
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *               lastName:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               city:
+ *                 type: string
+ *               licenseNumber:
+ *                 type: string
+ *               registeredDate:
+ *                 type: string
  *     responses:
  *       200:
  *         description: Customer updated successfully
+ *       400:
+ *         description: Validation error
  */
-router.put("/:id", auth, customersController.updateCustomer)
+router.put(
+  "/:id",
+  auth,
+  validateCustomer,   // ✅ ADD VALIDATION HERE
+  customersController.updateCustomer
+)
 
 /**
  * @swagger
  * /customers/{id}:
  *   delete:
  *     summary: Delete a customer
- *     description: Remove a customer from the database
+ *     description: Remove a customer from the database (Protected)
+ *     security:
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id
